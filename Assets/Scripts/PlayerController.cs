@@ -8,31 +8,53 @@ public class PlayerController : MonoBehaviour {
 	private bool isMoving;
 	public float m_moveSpeed = 0.5f;
 	private float m_weapons = 0;
+	public float horizontalSpeed = 3.0F;
+     public float verticalSpeed = 3.0F;
+	Vector3 m_MousePosition;
+	public AudioSource[] sounds;
+	Rigidbody clone;
+	Rigidbody clone1;
+	Rigidbody clone2;
+	Rigidbody clone3;
+	Rigidbody clone4;
+	Rigidbody clone5;
+
+
+	public Rigidbody pistolBullet;
+ 	public Transform Spawnpoint;
+
+	
+	//float speed = 1.0f;
 	void Start () {
 		m_anim = gameObject.GetComponent<Animator>();
+		sounds = GetComponents<AudioSource>();
+		//Debug.Log(sounds.Length);
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
+	
+		m_MousePosition  = Input.mousePosition;
+		m_MousePosition.z = 5.23f;
+		Vector3 tmpPos = Camera.main.WorldToScreenPoint(transform.position);
+		m_MousePosition.x = m_MousePosition.x - tmpPos.x; 
+		m_MousePosition.y = m_MousePosition.y - tmpPos.y;
+		float angle = Mathf.Atan2(m_MousePosition.y, m_MousePosition.x) * Mathf.Rad2Deg;
+		transform.localRotation = Quaternion.Euler(new Vector3(90, 0, angle));
+		 
 		if(Input.GetAxis("Horizontal") != 0) {
 			Vector3 pos = gameObject.transform.position;
 			pos.x += Input.GetAxis("Horizontal") * m_moveSpeed;
 			gameObject.transform.position = pos;
 			isMoving = true;
 		} 
-		/*else if (Input.GetAxis("Horizontal") == 0) {
-			isMoving = false;
-			//UpdateAnim();
-		}*/
 
 		if(Input.GetAxis("Vertical") != 0) {
 			Vector3 pos = gameObject.transform.position;
-			pos.y += Input.GetAxis("Vertical") * m_moveSpeed;
+			pos.z += Input.GetAxis("Vertical") * m_moveSpeed;
 			gameObject.transform.position = pos;
 			isMoving = true;
-			//UpdateAnim();
-			
-		} else if (Input.GetAxis("Vertical") == 0 && Input.GetAxis("Horizontal") == 0) {
+			} else if (Input.GetAxis("Vertical") == 0 && Input.GetAxis("Horizontal") == 0) {
 			isMoving = false;
 		}
 		UpdateAnim();
@@ -42,9 +64,7 @@ public class PlayerController : MonoBehaviour {
 			if(m_weapons>2){
 				m_weapons=0;
 			}
-		}
-
-		if(Input.GetKeyDown(KeyCode.Q)) {
+		} if(Input.GetKeyDown(KeyCode.Q)) {
 			m_weapons--;
 			if(m_weapons<0){
 				m_weapons=3;
@@ -54,9 +74,8 @@ public class PlayerController : MonoBehaviour {
 		if (Input.GetKeyDown(KeyCode.Mouse0)) {
 			Debug.Log("StartShoot");
 			m_anim.SetBool("Shoot", true);
-		}
-
-		if(Input.GetKeyUp(KeyCode.Mouse0)) {
+			ShootWeapon();
+		} if(Input.GetKeyUp(KeyCode.Mouse0)) {
 			m_anim.SetBool("Shoot", false);
 		}
 
@@ -65,13 +84,25 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+	void ShootWeapon() {
+		if(m_weapons == 0){
+			Rigidbody clone;
+			sounds[0].Play();
+			clone = (Rigidbody)Instantiate(pistolBullet, Spawnpoint.position, pistolBullet.rotation);
+			clone.velocity = Spawnpoint.TransformPoint (Input.mousePosition);
+		} 
+		else if(m_weapons == 1){
+			sounds[1].Play();
+			clone = (Rigidbody)Instantiate(pistolBullet, Spawnpoint.position, pistolBullet.rotation);
+			clone.velocity = Spawnpoint.TransformPoint (Input.mousePosition);
+		} 
+		else if(m_weapons == 2){
+			sounds[2].Play();
+		}
+	}
+
 
 	IEnumerator WeaponReload(){
-		/*Debug.Log("Start");
-		m_anim.SetBool("Reload", true);
-		yield return new WaitForSeconds(3);
-		Debug.Log("End");
-		m_anim.SetBool("Reload", false);*/
 		if(m_weapons == 0){
 			Debug.Log("Start");
 			m_anim.SetBool("Reload", true);
